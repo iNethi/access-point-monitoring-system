@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  inethi-ap-monitor-mysql:
+    container_name: inethi-ap-monitor-mysql
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'ap-monitor'
+      MYSQL_USER: 'inethi'
+      MYSQL_PASSWORD: 'iNethi2023#'
+      MYSQL_ROOT_PASSWORD: 'iNethi2023#'
+    ports:
+      - "3336:3306"
+    volumes:
+      - my-db:/var/lib/mysql
+
+volumes:
+  my-db:
