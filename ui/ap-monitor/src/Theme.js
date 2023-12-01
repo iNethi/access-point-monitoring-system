@@ -15,9 +15,17 @@ const theme = createTheme({
             default: '#111218',
             paper: '#1E1E1E'
         },
+        button: {
+            main: '#34de2f',
+            dark: '#1a6900'
+        },
+        button_red: {
+            main: '#bf0000',
+            dark: '#ff0000'
+        },
         text: {
             primary: '#FFFFFF',
-            secondary: '#000000'
+            secondary: '#8c8585'
         }
     },
     components: {

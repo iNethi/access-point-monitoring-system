@@ -7,37 +7,55 @@ from rest_framework import status
 from .models import NetworkDevice
 from .utilities import update_prometheus_targets, remove_prometheus_targets
 import json
+class AddDevice(APIView):
 
+    def post(self, request):
+        data = request.data
+        try:
+            # Create a new device
+            device = NetworkDevice.objects.create(
+                name=data.get('name'),
+                device_type=data.get('device_type'),
+                ip_address=data.get('ip_address')
+            )
+
+            update_prometheus_targets([device.ip_address])
+
+            return Response({"status": "success", "message": "Device added successfully."})
+
+        except Exception as e:
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 class UpdateDevices(APIView):
 
     def post(self, request):
         try:
-            data = request.data
+            data = json.loads(request.body)
+            old_ip_address = data.get('old_ip_address')
+            new_device_data = data.get('new_device_data')
 
-            new_ips = []
-            for device_data in data:
-                ip_address = device_data.get('ip_address')
-                if not ip_address:
-                    continue  # Skip if no IP address is provided
+            # Find the device by old IP address
+            try:
+                device = NetworkDevice.objects.get(ip_address=old_ip_address)
+            except NetworkDevice.DoesNotExist:
+                return Response({"status": "error", "message": "Device not found."}, status=status.HTTP_404_NOT_FOUND)
 
-                # Update or create the NetworkDevice
-                obj, created = NetworkDevice.objects.update_or_create(
-                    ip_address=ip_address,
-                    defaults={
-                        'name': device_data.get('name', ''),
-                        'device_type': device_data.get('device_type', '')
-                    }
-                )
-                new_ips.append(ip_address)
+            # Update the device details
+            device.name = new_device_data.get('name', device.name)
+            device.device_type = new_device_data.get('device_type', device.device_type)
+            device.ip_address = new_device_data.get('ip_address', device.ip_address)
 
-            # Update the Prometheus targets with new IP addresses
-            update_prometheus_targets(new_ips)
+            # Save the updated device
+            device.save()
 
-            return Response({"status": "success", "message": "Devices updated successfully."})
+            # Optionally, update Prometheus targets if IP address has changed
+            if old_ip_address != device.ip_address:
+                remove_prometheus_targets([old_ip_address])
+                update_prometheus_targets([device.ip_address])
+
+            return Response({"status": "success", "message": "Device updated successfully."})
 
         except Exception as e:
-            return Response({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class DeleteDevice(APIView):
 
     def post(self, request):
@@ -52,15 +70,19 @@ class DeleteDevice(APIView):
             except NetworkDevice.DoesNotExist:
                 return Response({"status": "error", "message": "Device not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Delete the device from the database
-            device.delete()
 
             # Remove the IP address from the YAML file
             remove_prometheus_targets([ip_address])
 
+            # Delete the device from the database if it was removed from file
+            device.delete()
+            print('deleted device')
+
+
             return Response({"status": "success", "message": "Device deleted successfully."})
 
         except Exception as e:
+            print(e)
             return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ListDevices(APIView):

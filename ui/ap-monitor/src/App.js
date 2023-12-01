@@ -5,15 +5,152 @@ import Box from "@mui/material/Box";
 import NavBar from "./components/NavBar";
 import Theme from "./Theme";
 import AddIcon from '@mui/icons-material/Add';
-
+import ConfirmDeleteDialog from "./components/ConfirmDeleteDialog";
+import Alert from '@mui/material/Alert';
+import EditDeviceDialog from './components/EditDeviceDialog';
+import AddDeviceDialog from './components/AddDeviceDialog';
 function App() {
-  const [devices, setDevices] = useState([]);
-  useEffect(() => {
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [deviceToDelete, setDeviceToDelete] = useState(null);
+    const [devices, setDevices] = useState([]);
+    const [alert, setAlert] = useState({ show: false, message: '' });
+    const [successAlert, setSuccessAlert] = useState({ show: false, message: '' });
+    const [openEditDialog, setOpenEditDialog] = useState(false);
+    const [deviceToEdit, setDeviceToEdit] = useState({ name: '', ip_address: '', device_type: '' });
+    const [openAddDialog, setOpenAddDialog] = useState(false);
+
+    useEffect(() => {
     // Fetch devices from your API
     fetch('http://localhost:8000/devices/')
         .then(response => response.json())
-        .then(data => setDevices(data));
-  }, []);
+        .then(data => setDevices(data))
+        .catch(error => console.error('Error:', error));
+
+    }, []);
+
+    const handleAddClick = () => {
+        setOpenAddDialog(true);
+    };
+
+    const handleCloseAddDialog = () => {
+        setOpenAddDialog(false);
+    };
+
+    const handleAddDevice = (newDevice) => {
+        setOpenAddDialog(false);
+
+        fetch('http://localhost:8000/add/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newDevice),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(() => {
+                setSuccessAlert({ show: true, message: "Device successfully added." });
+                fetchDevices(); // Re-fetch devices
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setAlert({ show: true, message: "Failed to add the device." });
+            });
+    };
+
+    const fetchDevices = () => {
+        fetch('http://localhost:8000/devices/')
+            .then(response => response.json())
+            .then(data => setDevices(data))
+            .catch(error => console.error('Error:', error));
+    };
+
+    const handleEditClick = (device) => {
+        setDeviceToEdit(device);
+        setOpenEditDialog(true);
+    };
+
+    const handleCloseEditDialog = () => {
+        setOpenEditDialog(false);
+    };
+
+    const handleUpdateDevice = (oldIpAddress, updatedDevice) => {
+        setOpenEditDialog(false);
+        fetch(`http://localhost:8000/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                old_ip_address: oldIpAddress,
+                new_device_data: updatedDevice
+            }),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(() => {
+                setSuccessAlert({ show: true, message: "Device successfully updated." });
+                //  update state
+                fetchDevices();
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setAlert({ show: true, message: "Failed to update the device." });
+            });
+    };
+
+    const handleDeleteClick = (device) => {
+        setDeviceToDelete(device);
+        setOpenDeleteDialog(true);
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setOpenDeleteDialog(false);
+    };
+
+    const handleConfirmDelete = () => {
+        setOpenDeleteDialog(false);
+        if (deviceToDelete) {
+            // Perform API call to delete the device
+            fetch(`http://localhost:8000/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ip_address: deviceToDelete.ip_address }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    // Remove the deleted device from the state
+                    setDevices(devices.filter(device => device.ip_address !== deviceToDelete.ip_address));
+                    setSuccessAlert({show: true, message: "Device successfully deleted."})
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    setAlert({ show: true, message: "Failed to remove the device. Please contact support." });
+                });
+        }
+    };
+    const handleCloseAlert = () => {
+        setAlert({ show: false, message: '' });
+    };
+    const handleCloseSuccessAlert = () => {
+        setSuccessAlert({ show: false, message: '' });
+    };
 
   return (
       <ThemeProvider theme={Theme}>
@@ -26,6 +163,16 @@ function App() {
               }}
           >
               <NavBar />
+              {alert.show && (
+                  <Alert severity="error" onClose={handleCloseAlert}>
+                      {alert.message}
+                  </Alert>
+              )}
+              {successAlert.show && (
+                  <Alert severity="success" onClose={handleCloseSuccessAlert}>
+                      {successAlert.message}
+                  </Alert>
+              )}
               <Box
                   sx={{
                       flexGrow: 1,
@@ -38,23 +185,39 @@ function App() {
 
                   }}
               >
-                  <DeviceList devices={devices} />
+
+                  <DeviceList devices={devices} onDelete={handleDeleteClick} onEdit={handleEditClick}/>
+                  <ConfirmDeleteDialog
+                      open={openDeleteDialog}
+                      handleClose={handleCloseDeleteDialog}
+                      handleConfirm={handleConfirmDelete}
+                  />
+                  <EditDeviceDialog
+                      open={openEditDialog}
+                      handleClose={handleCloseEditDialog}
+                      device={deviceToEdit}
+                      handleUpdate={handleUpdateDevice}
+                  />
               </Box>
               <Fab
-                  color="primary"
+                  onClick={handleAddClick}
+                  color="button"
                   aria-label="add"
                   sx={{
                       position: 'fixed',
                       bottom: Theme.spacing(4),
                       right: Theme.spacing(4),
                   }}
-                  onClick={() => {
-                      // Handle click event for the Add button
-                  }}
               >
                   <AddIcon />
               </Fab>
+              <AddDeviceDialog
+                  open={openAddDialog}
+                  handleClose={handleCloseAddDialog}
+                  handleAdd={handleAddDevice}
+              />
           </Box>
+
       </ThemeProvider>
 
 
