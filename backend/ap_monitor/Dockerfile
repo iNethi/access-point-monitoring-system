@@ -2,20 +2,29 @@
 FROM python:3.9-slim AS base
 WORKDIR /app
 
-  # Install system dependencies for mysqlclient
+# Install system dependencies for mysqlclient
 RUN apt-get update && apt-get install -y \
 default-libmysqlclient-dev \
 gcc \
 pkg-config \
 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-  # Now install your Python packages
+# Now install your Python packages
 COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+# Copy the entrypoint script and give it the necessary permissions
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+# Copy the rest of your application's code
 COPY . .
+RUN chmod +x /app/entrypoint.sh
 
+# Set the entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
 
-  # ---- Release with Gunicorn ----
+# ---- Release with Gunicorn ----
 FROM base AS release
 CMD ["gunicorn", "inethi_management.wsgi:application", "--bind", "0.0.0.0:8000"]
