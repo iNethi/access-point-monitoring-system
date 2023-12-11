@@ -14,7 +14,7 @@ services:
     volumes:
       - ap_monitor_db:/var/lib/mysql
 
-  inethi-user-management:
+  inethi-ap-monitor:
     container_name: inethi-ap-monitor
     build:
       context: .
