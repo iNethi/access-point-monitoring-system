@@ -19,7 +19,10 @@ const NavBar = () => {
                         <Typography>ACCESS POINTS</Typography>
                     </Grid>
                     <Grid item>
-                        <Typography>MONITOR</Typography>
+                        <a href="https://grafana.inethilocal.net/" target="_blank" rel="noopener noreferrer"
+                           style={{textDecoration: 'none', color: 'inherit'}}>
+                            <Typography>MONITOR</Typography>
+                        </a>
                     </Grid>
 
                 </Grid>
