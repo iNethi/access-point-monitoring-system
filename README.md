@@ -11,4 +11,5 @@ from [here](https://github.com/iNethi/inethi).
 
 ## How this works
 The UI and database are connected to the prometheus yaml file. When this file is changed the prometheus container will 
-reload using the API call ``. This will reload the yaml file that would have been edited whenever a UI edit occurs.
+reload using the API call `curl -u inethi:iNethi2023# -X POST http://inethi-prometheus:9090/-/reload`
+`. This will reload the yaml file that would have been edited whenever a UI edit occurs.
