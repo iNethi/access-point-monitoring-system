@@ -28,4 +28,4 @@ ENTRYPOINT ["/app/entrypoint.sh"]
 
 # ---- Release with Gunicorn ----
 FROM base AS release
-CMD ["gunicorn", "inethi_management.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "ap_monitor.wsgi:application", "--bind", "0.0.0.0:8000"]
