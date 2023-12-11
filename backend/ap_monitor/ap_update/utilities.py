@@ -7,7 +7,7 @@ def reload_prometheus():
     username = 'inethi'
     password = 'iNethi2023#'
 
-    url = 'https://prometheus.inethilocal.net/-/reload'
+    url = 'http://inethi-prometheus:9090/-/reload'
 
     response = requests.post(url, auth=HTTPBasicAuth(username, password))
 
