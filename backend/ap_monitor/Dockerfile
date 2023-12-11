@@ -13,6 +13,7 @@ pkg-config \
 COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+RUN pip install gunicorn
 
 # Copy the entrypoint script and give it the necessary permissions
 COPY entrypoint.sh /app/
