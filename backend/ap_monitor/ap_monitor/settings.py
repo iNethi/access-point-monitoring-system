@@ -85,7 +85,7 @@ DATABASES = {
         'PASSWORD': 'iNethi2023#',
         #'HOST': '127.0.0.1', # this works when running python locally
         'HOST': 'inethi-ap-monitor-mysql',
-        'PORT': '3336',
+        'PORT': '3306',
     }
 }
 

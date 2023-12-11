@@ -9,10 +9,11 @@ services:
       MYSQL_USER: 'inethi'
       MYSQL_PASSWORD: 'iNethi2023#'
       MYSQL_ROOT_PASSWORD: 'iNethi2023#'
-    ports:
-      - "3336:3306"
     volumes:
       - ap_monitor_db:/var/lib/mysql
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apMysql.entrypoints=websecure"
 
   inethi-ap-monitor:
     container_name: inethi-ap-monitor
