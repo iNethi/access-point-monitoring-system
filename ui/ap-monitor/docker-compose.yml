@@ -1,0 +1,16 @@
+version: "3"
+services:
+  ap-frontend:
+    build:
+      context: .
+    container_name: inethi-ap-tracking-frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.trackFrontend.rule=Host(`track.inethilocal.net`)"
+      - "traefik.http.routers.trackFrontend.entrypoints=websecure"
+      - "traefik.http.services.trackFrontend.loadbalancer.server.port=80"
+networks:
+  default:
+    external:
+      name: "inethi-bridge-traefik"
+

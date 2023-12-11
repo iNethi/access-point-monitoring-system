@@ -24,7 +24,7 @@ services:
       - "/mnt/data/prometheus/prometheus-config/prometheus.yml:/app/prometheus.yml"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.apMonitor.rule=Host(`track.inethilocal.net`)"
+      - "traefik.http.routers.apMonitor.rule=Host(`ap-backend.inethilocal.net`)"
       - "traefik.http.routers.apMonitor.entrypoints=websecure"
       - "traefik.http.services.apMonitor.loadbalancer.server.port=8000"
 
