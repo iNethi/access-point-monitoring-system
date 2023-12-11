@@ -1,5 +1,18 @@
 import yaml
 import os
+import requests
+from requests.auth import HTTPBasicAuth
+
+def reload_prometheus():
+    username = 'inethi'
+    password = 'iNethi2023#'
+
+    url = 'https://prometheus.inethilocal.net/-/reload'
+
+    response = requests.post(url, auth=HTTPBasicAuth(username, password))
+
+    print('Status Code:', response.status_code)
+    print('Response:', response.text)
 def update_prometheus_targets(ip_addresses):
     current_directory = os.getcwd()
     filename = 'prometheus.yml'
@@ -18,8 +31,8 @@ def update_prometheus_targets(ip_addresses):
 
     with open(full_path, 'w') as file:
         yaml.dump(data, file, sort_keys=False)
+    reload_prometheus()
 
-import yaml
 
 def remove_prometheus_targets(ip_addresses):
     current_directory = os.getcwd()
@@ -41,6 +54,7 @@ def remove_prometheus_targets(ip_addresses):
     with open(full_path, 'w') as file:
         yaml.dump(data, file, sort_keys=False)
     print('written yaml')
+    reload_prometheus()
 
 def validate_yaml(filename):
     try:

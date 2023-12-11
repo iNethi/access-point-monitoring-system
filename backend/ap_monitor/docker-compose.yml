@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  inethi-ap-monitor-mysql:
+    container_name: inethi-ap-monitor-mysql
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'ap-monitor'
+      MYSQL_USER: 'inethi'
+      MYSQL_PASSWORD: 'iNethi2023#'
+      MYSQL_ROOT_PASSWORD: 'iNethi2023#'
+    ports:
+      - "3336:3306"
+    volumes:
+      - ap_monitor_db:/var/lib/mysql
+
+  inethi-user-management:
+    container_name: inethi-ap-monitor
+    build:
+      context: .
+    depends_on:
+      - inethi-ap-monitor-mysql
+    volumes:
+      - "/mnt/data/prometheus/prometheus-config/prometheus.yml:/app/prometheus.yml"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.apMonitor.rule=Host(`track.inethilocal.net`)"
+      - "traefik.http.routers.apMonitor.entrypoints=websecure"
+      - "traefik.http.services.apMonitor.loadbalancer.server.port=8000"
+
+networks:
+  default:
+    external:
+      name: "inethi-bridge-traefik"
+
+volumes:
+  ap_monitor_db:
