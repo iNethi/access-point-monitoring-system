@@ -4,7 +4,6 @@ ansible-runner==2.3.2
 anyio==3.6.2
 apache-libcloud==3.2.0
 appdirs==1.4.4
-apturl==0.5.2
 argcomplete==1.8.1
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
